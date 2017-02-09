@@ -15,7 +15,7 @@
 #buttonList{
 	float:left;
 	width:160px;
-	height:530px;
+	height:210px;
 	border:10px solid #ff80c0;	
 }
 #chatInput input{
@@ -45,4 +45,11 @@
 #roomList tr:hover{
 	background:#4da5a3;
 	color:#fff;
+}
+
+#userList{
+	float:left;
+	width:160px;
+	height:300px;
+	border:10px solid #b9dcff;	
 }

@@ -11,6 +11,7 @@
 <script type="text/javascript"
 	src="http://code.jquery.com/jquery-2.1.3.js"></script>
 <link rel="stylesheet" type="text/css" href="css/main.css">
+<link rel="shortcut icon" href="css/pi.ico"/>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <title>Mina-Websocket Chat Client</title>
 <script type="text/javascript">
@@ -65,8 +66,10 @@
 						$("#chatArea").append(message);
 						break;
 					case "LEAVE":
+						$("#userList2").empty();
 						$("#chatArea").empty();
 						$("#chatInputBox").attr("disabled", true);
+						$("#destroyBtn").hide();
 						$("#leaveBtn").hide();
 						$("#createBtn").show();
 						var i, len, message;
@@ -76,6 +79,20 @@
 							message += result[i] + " ";
 						}
 						$("#chatArea").append(message + "<br>");
+						break;
+					case "CREATE":
+						$("#destroyBtn").show();
+						$("#destroyBtn").onclick = function(){ roomDestroy(result[2]); };
+						break;
+					case "GETUSER":
+						$("#userList2").empty();
+						var i, len, message;
+						len = result.length;
+						message = "";
+						for(i=2; i<len; i++){
+							message += result[i]+" ";
+						}
+						$('#userList2').append(message);
 						break;
 					}
 				} else if (status == "FAIL") {
@@ -103,7 +120,7 @@
 	};
 	ws.onclose = function() {
 		alert("Connection is closed...");
-		window.location.replace('login.jsp');
+		window.location.replace('login.html');
 	};
 
 	function roomJoin(no) {
@@ -129,7 +146,10 @@
 	function createPop() {/* Written By Ten */
 		window.open('createRoom.jsp',
 					'',
-					'left=200, top=200, width=500, height=200, scrollbars=n0, status=no, resizeable=no, fullscreen=no, channelmode=no');
+					'left=200, top=200, width=500, height=260, scrollbars=n0, status=no, resizeable=no, fullscreen=no, channelmode=no');
+	}
+	function roomDestroy(no){
+		ws.send("DESTROY "+no);
 	}
 </script>
 </head>
@@ -141,6 +161,11 @@
 			<button id="createBtn" class="Buttons" onclick="createPop()">Create</button>
 			<button id="leaveBtn" class="Buttons" style="display: none;"
 				onclick="roomLeave()">Leave</button>
+			<button id="destroyBtn" class="Buttons" style="display: none;" onclick="roomDestroy()">Destroy</button>
+		</div>
+		<div id="userList" align="center">
+				:::접속자 목록:::<br>
+				<div id="userList2"></div>
 		</div>
 		<form id="chatInput">
 			<input id="chatInputBox" type="text"

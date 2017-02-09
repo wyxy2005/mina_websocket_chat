@@ -26,6 +26,8 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
+import javax.servlet.SessionTrackingMode;
+
 import org.apache.mina.core.buffer.IoBuffer;
 import org.apache.mina.core.future.WriteFuture;
 import org.apache.mina.core.service.IoHandler;
@@ -124,25 +126,41 @@ public class ChatProtocolHandler extends IoHandlerAdapter {
 				MdcInjectionFilter.setProperty(session, "user", user);
 				users.add(user);
 
-				session.setAttribute("roomID", "0");
-				MdcInjectionFilter.setProperty(session, "roomID", "0");
+				session.setAttribute("roomId", "0");
+				MdcInjectionFilter.setProperty(session, "roomId", "0");
 
 				session.write(str2Packet("LOGIN OK " + printRooms()));
 				break;
 
 			case ChatCommand.BROADCAST:
 				if (result.length == 2) {
-					String roomId = session.getAttribute("roomID").toString();
+					String roomId = session.getAttribute("roomId").toString();
 					roomBroadcast(user + ": " + result[1], roomId);
 				}
 				break;
-			case ChatCommand.JOIN:
-				if (result.length == 2) {
+			case ChatCommand.JOIN: // Written By HJ
+				int getId = Integer.parseInt(result[1]);
+				int roomSize = 0;
+				Room roomGet = null;
+				synchronized (rooms) {
+					for(Room roomTmp : rooms){
+						if (roomTmp.getRoomID() == getId) {
+							roomGet = roomTmp;
+							roomSize = roomTmp.getSize();
+							break;
+						}
+					}
+				}
+				if (result.length == 2 && getRoomSessionCnt(roomGet) < roomSize) {
 					setRoomid(session, result[1]);
-					String roomId = session.getAttribute("roomID").toString();
 					session.write(str2Packet("JOIN OK"));
-					roomBroadcast("The user " + user + " has joined this Room.", roomId);
+					if(roomGet.getAdminUser().equals(session))
+						session.write(str2Packet("CREATE OK "+roomGet.getRoomID()));
+					roomBroadcast("The user " + user + " has joined this Room.", result[1]);
+					refreshUsers(result[1]);
 					refreshRoom();
+				} else {
+					session.write(str2Packet("JOIN FAIL " + printRooms()));
 				}
 				break;
 			case ChatCommand.CREATE:
@@ -151,15 +169,38 @@ public class ChatProtocolHandler extends IoHandlerAdapter {
 					Room room = new Room(session, Integer.parseInt(roomArg[1]), roomArg[0], ++roomIdSeq);
 					rooms.add(room);
 					setRoomid(session, String.valueOf(roomIdSeq));
-					session.write(str2Packet("JOIN OK"));
+					session.write(str2Packet("JOIN OK "));
+					session.write(str2Packet("CREATE OK "+roomIdSeq));
 					roomBroadcast("The user " + user + " has joined this Room.", String.valueOf(roomIdSeq));
 					refreshRoom();
 				}
 				break;
 			case ChatCommand.LEAVE:
-				String roomId = session.getAttribute("roomID").toString();
+				String roomId = session.getAttribute("roomId").toString();
 				setRoomid(session, "0");
 				roomBroadcast("The user " + user + " has left this Room.", roomId);
+				refreshUsers(roomId);
+				refreshRoom();
+				break;
+			case ChatCommand.DESTROY: // Written By ESP
+				String id = session.getAttribute("roomId").toString();
+				synchronized (sessions) {
+					for (IoSession sessionTmp : sessions) {
+						if (sessionTmp.isConnected() && (id.equals(sessionTmp.getAttribute("roomId").toString()))) {
+							setRoomid(sessionTmp, "0");
+						}		
+					}
+				}
+				Room room = null;
+				synchronized (rooms) {
+					for(Room roomTmp : rooms){
+						if(id.equals(String.valueOf(roomTmp.getRoomID()))){
+							room = roomTmp;
+							break;
+						}
+					}
+				}
+				rooms.remove(room);
 				refreshRoom();
 				break;
 			default:
@@ -174,7 +215,7 @@ public class ChatProtocolHandler extends IoHandlerAdapter {
 	@Override
 	public void sessionClosed(IoSession session) throws Exception {
 		String user = (String) session.getAttribute("user");
-		String roomId = session.getAttribute("roomID").toString();
+		String roomId = session.getAttribute("roomId").toString();
 		users.remove(user);
 		sessions.remove(session);
 		if(!roomId.equals("0"))
@@ -187,7 +228,7 @@ public class ChatProtocolHandler extends IoHandlerAdapter {
 		synchronized (sessions) {
 			for (IoSession sessionTmp : sessions) {
 				// Session Write to Every Sessions
-				if (sessionTmp.isConnected() && ("0".equals(sessionTmp.getAttribute("roomID").toString()))) {
+				if (sessionTmp.isConnected() && ("0".equals(sessionTmp.getAttribute("roomId").toString()))) {
 
 					sessionTmp.write(str2Packet("LEAVE OK " + printRooms()));
 				}
@@ -220,7 +261,7 @@ public class ChatProtocolHandler extends IoHandlerAdapter {
 		synchronized (sessions) {
 			for (IoSession sessionTmp : sessions) {
 				// Session Write to Every Sessions
-				if (sessionTmp.isConnected() && (roomId.equals(sessionTmp.getAttribute("roomID").toString()))) {
+				if (sessionTmp.isConnected() && (roomId.equals(sessionTmp.getAttribute("roomId").toString()))) {
 
 					sessionTmp.write(str2Packet("BROADCAST OK " + message));
 				}
@@ -244,7 +285,7 @@ public class ChatProtocolHandler extends IoHandlerAdapter {
 		int roomId = room.getRoomID();
 		synchronized (sessions) {
 			for (IoSession session : sessions) {
-				if (roomId == Integer.parseInt((String) session.getAttribute("roomID"))) {
+				if (roomId == Integer.parseInt((String) session.getAttribute("roomId"))) {
 					cnt++;
 				}
 			}
@@ -252,9 +293,9 @@ public class ChatProtocolHandler extends IoHandlerAdapter {
 		return cnt;
 	}
 
-	public void setRoomid(IoSession session, String roomID) {
-		session.setAttribute("roomID", roomID);
-		MdcInjectionFilter.setProperty(session, "roomID", roomID);
+	public void setRoomid(IoSession session, String roomId) {
+		session.setAttribute("roomId", roomId);
+		MdcInjectionFilter.setProperty(session, "roomId", roomId);
 	}
 
 	public String printRooms() {
@@ -271,7 +312,37 @@ public class ChatProtocolHandler extends IoHandlerAdapter {
 		initMsg += "</table>";
 		return initMsg;
 	}
-
+	public void refreshUsers(String roomId){
+		String usrTable = "<table id='users'>";
+		synchronized (sessions) {
+			for (IoSession sessionTmp : sessions) {
+				if (sessionTmp.getAttribute("roomId").equals(roomId)) {
+					usrTable += "<tr class='user'><td>" + sessionTmp.getAttribute("user") + "</td></tr>";
+				}
+			}
+		}
+		usrTable += "</table>";
+		synchronized (sessions) {
+			for (IoSession sessionTmp : sessions) {
+				if (sessionTmp.getAttribute("roomId").equals(roomId)) {
+					sessionTmp.write(str2Packet("GETUSER OK " + usrTable));
+				}
+			}
+		}
+	}
+	public Room getRoomByRoomId(String roomId){
+		Room room = null;
+		synchronized (rooms) {
+			for(Room roomTmp : rooms){
+				if(roomId.equals(roomTmp.getRoomID()+"")){
+					room = roomTmp;
+					break;
+				}
+			}
+		}
+		return room;
+		
+	}
 	public boolean isChatUser(String name) {
 		return users.contains(name);
 	}
