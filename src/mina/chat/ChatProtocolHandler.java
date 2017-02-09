@@ -62,10 +62,10 @@ public class ChatProtocolHandler extends IoHandlerAdapter {
 	public ChatProtocolHandler() {
 		// TODO Auto-generated constructor stub
 		rooms.add(new Room());
-		rooms.add(new Room(null, 10, "Room No.1", ++roomIdSeq));
+		/*rooms.add(new Room(null, 10, "Room No.1", ++roomIdSeq));
 		rooms.add(new Room(null, 10, "Room No.2", ++roomIdSeq));
 		rooms.add(new Room(null, 10, "Room No.3", ++roomIdSeq));
-		rooms.add(new Room(null, 10, "Room No.4", ++roomIdSeq));
+		rooms.add(new Room(null, 10, "Room No.4", ++roomIdSeq));*/
 	}
 
 	@Override
