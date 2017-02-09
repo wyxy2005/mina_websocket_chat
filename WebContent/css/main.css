@@ -1,0 +1,48 @@
+@CHARSET "EUC-KR";
+#chatWrapper{
+	width:800px;
+	height:600px;
+	border:10px solid #4da5a3;
+}
+#chatArea{
+	float:left;
+	width:600px;
+	height:530px;
+	border:10px solid #0000ff;
+	overflow-y:scroll;
+	word-wrap:break-word;
+}
+#buttonList{
+	float:left;
+	width:160px;
+	height:530px;
+	border:10px solid #ff80c0;	
+}
+#chatInput input{
+	float:left;
+	width:780px;
+	height:30px;
+	border:10px solid #ff8040;
+}
+.Buttons{
+	float:left;
+	width:160px;
+	height:50px;
+}
+#roomList{
+	width:100%;
+	border:1px solid black;
+	cursor:default;
+	border-collapse: collapse;
+}
+.roomTitle{
+	text-align: center;
+}
+.roomSize{
+	text-align: center;
+	width:50px;
+}
+#roomList tr:hover{
+	background:#4da5a3;
+	color:#fff;
+}
