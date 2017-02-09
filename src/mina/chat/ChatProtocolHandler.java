@@ -172,6 +172,7 @@ public class ChatProtocolHandler extends IoHandlerAdapter {
 					session.write(str2Packet("JOIN OK "));
 					session.write(str2Packet("CREATE OK "+roomIdSeq));
 					roomBroadcast("The user " + user + " has joined this Room.", String.valueOf(roomIdSeq));
+					refreshUsers(String.valueOf(roomIdSeq));
 					refreshRoom();
 				}
 				break;
