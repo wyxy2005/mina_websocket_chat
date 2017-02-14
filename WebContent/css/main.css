@@ -53,3 +53,7 @@
 	height:300px;
 	border:10px solid #b9dcff;	
 }
+#currentRoom{
+	font-weight: bold;
+	font-style: italic;
+}

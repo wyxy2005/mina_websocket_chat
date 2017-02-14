@@ -1,7 +1,6 @@
 <%@ page language="java" contentType="text/html; charset=UTF-8"
 	pageEncoding="UTF-8"%>
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
-
 <html>
 <head>
 <%
@@ -66,7 +65,6 @@
 						$("#chatArea").append(message);
 						break;
 					case "LEAVE":
-						$("#userList2").empty();
 						$("#chatArea").empty();
 						$("#chatInputBox").attr("disabled", true);
 						$("#destroyBtn").hide();
@@ -94,6 +92,18 @@
 						}
 						$('#userList2').append(message);
 						break;
+					case "SETTITLE": // Written By ESP
+						var i, len, message;
+						len = result.length;
+						message = "";
+						for(i=2; i<len; i++){
+							message += result[i]+" ";
+						}
+						$("#currentRoom").empty();
+						$("#currentRoom").append(message);
+						$("#currentRoom").show();
+						// End ESP
+						break;
 					}
 				} else if (status == "FAIL") {
 					switch (theCommand) {
@@ -110,6 +120,9 @@
 							message += result[i] + " ";
 						}
 						$("#chatArea").append(message + "<br>");
+						break;
+					case "USERKICK":
+						alert("User kick failed.");
 						break;
 					}
 				}
@@ -146,10 +159,14 @@
 	function createPop() {/* Written By Ten */
 		window.open('createRoom.jsp',
 					'',
-					'left=200, top=200, width=500, height=260, scrollbars=n0, status=no, resizeable=no, fullscreen=no, channelmode=no');
+					'left=200, top=200, width=500, height=320, scrollbars=n0, status=no, resizeable=no, fullscreen=no, channelmode=no');
 	}
 	function roomDestroy(no){
 		ws.send("DESTROY "+no);
+	}
+
+	function userKick(user){
+		ws.send("USERKICK " + user);
 	}
 </script>
 </head>
@@ -164,8 +181,9 @@
 			<button id="destroyBtn" class="Buttons" style="display: none;" onclick="roomDestroy()">Destroy</button>
 		</div>
 		<div id="userList" align="center">
-				:::접속자 목록:::<br>
-				<div id="userList2"></div>
+			<div id="currentRoom" style="display: none;"></div> <!-- Written By ESP -->
+			:::접속자 목록:::<br>
+			<div id="userList2"></div>
 		</div>
 		<form id="chatInput">
 			<input id="chatInputBox" type="text"

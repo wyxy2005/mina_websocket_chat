@@ -1,0 +1,69 @@
+@CHARSET "UTF-8";
+/* 
+	Written By Ten.
+ */
+input{
+	border:2px solid #abfa93; 
+}
+th{
+	align:center;
+	color:#008080;
+}
+td, th{
+	height:30px;
+}
+
+#buttonComplete {
+	font-size:1.2em;
+	text-decoration:none;
+	font-family:맑은고딕;
+	box-shadow:inset #d5ffb0 0px 5px 8px -1px,#ffbdde 1px 3px 2px;
+	o-box-shadow:inset #d5ffb0 0px 5px 8px -1px,#ffbdde 1px 3px 2px;
+	-moz-box-shadow:inset #d5ffb0 0px 5px 8px -1px,#ffbdde 1px 3px 2px;
+	-webkit-box-shadow:inset #d5ffb0 0px 5px 8px -1px,#ffbdde 1px 3px 2px;
+	background:#abfa93;
+	background:-o-linear-gradient(90deg, #abfa93, #8ef598);
+	background:-moz-linear-gradient( center top, #abfa93 5%, #8ef598 100% );
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #abfa93), color-stop(1, #8ef598) );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#abfa93', endColorstr='#8ef598');
+	background:-webkit-linear-gradient(#abfa93, #8ef598);
+	background:-ms-linear-gradient(#abfa93, #8ef598);
+	background:linear-gradient(#abfa93, #8ef598);
+	text-indent:0px;
+	line-height:0px;
+	-moz-border-radius:0 25px 25px 25px;
+	-webkit-border-radius:0 25px 25px 25px;
+	border-radius:0 25px 25px 25px;
+	text-align:center;
+	vertical-align:top;
+	display:inline-block;
+	color:#ffffff;
+	width:100px;
+	height:30px;
+	padding:13px;
+	text-shadow:#b1faaf 2px 2px 18px;
+	border-color:#b2ffcc;
+	border-width:2px;
+	border-style:solid;
+}
+
+.buttonComplete:active {
+	box-shadow:inset #d5ffb0 0px 5px 8px -1px,#ffbdde 1px 0 2px;
+	o-box-shadow:inset #d5ffb0 0px 5px 8px -1px,#ffbdde 1px 0 2px;
+	-moz-box-shadow:inset #d5ffb0 0px 5px 8px -1px,#ffbdde 1px 0 2px;
+	-webkit-box-shadow:inset #d5ffb0 0px 5px 8px -1px,#ffbdde 1px 0 2px;
+	position:relative;
+	top:3px
+}
+
+#buttonComplete:hover {
+	background:#b0b0ff;
+	background:-o-linear-gradient(90deg, #8ef598, #abfa93);
+	background:-moz-linear-gradient( center top, #8ef598 5%, #abfa93 100% );
+	background:-webkit-gradient( linear, left top, left bottom, color-stop(0.05, #8ef598), color-stop(1, #abfa93) );
+	filter:progid:DXImageTransform.Microsoft.gradient(startColorstr='#8ef598', endColorstr='#abfa93');
+	background:-webkit-linear-gradient(#8ef598, #abfa93);
+	background:-ms-linear-gradient(#8ef598, #abfa93);
+	background:linear-gradient(#8ef598, #abfa93);
+}
+</style>

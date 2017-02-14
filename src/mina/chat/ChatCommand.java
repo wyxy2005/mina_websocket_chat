@@ -40,6 +40,8 @@ public class ChatCommand {
 
     public static final int DESTROY = 6;
 
+    public static final int USERKICK = 7;
+    
     private final int num;
 
     private ChatCommand(int num) {
@@ -71,6 +73,9 @@ public class ChatCommand {
         }
         if ("DESTROY".equals(s)){
         	return new ChatCommand(DESTROY);
+        }
+        if ("USERKICK".equals(s)){
+        	return new ChatCommand(USERKICK);
         }
         throw new IllegalArgumentException("Unrecognized command: " + s);
     }

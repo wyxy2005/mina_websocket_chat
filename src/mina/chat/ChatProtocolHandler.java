@@ -99,6 +99,7 @@ public class ChatProtocolHandler extends IoHandlerAdapter {
 
 			case ChatCommand.QUIT:
 				//session.write("QUIT OK");
+				refreshUsers("0");
 				session.closeNow();
 				break;
 			case ChatCommand.LOGIN:
@@ -129,7 +130,11 @@ public class ChatProtocolHandler extends IoHandlerAdapter {
 				session.setAttribute("roomId", "0");
 				MdcInjectionFilter.setProperty(session, "roomId", "0");
 
+				//getUserList(session);
+				
 				session.write(str2Packet("LOGIN OK " + printRooms()));
+				session.write(str2Packet("SETTITLE OK LOBBY"));
+				refreshUsers("0");
 				break;
 
 			case ChatCommand.BROADCAST:
@@ -158,10 +163,17 @@ public class ChatProtocolHandler extends IoHandlerAdapter {
 						session.write(str2Packet("CREATE OK "+roomGet.getRoomID()));
 					roomBroadcast("The user " + user + " has joined this Room.", result[1]);
 					refreshUsers(result[1]);
+					refreshUsers("0");
 					refreshRoom();
 				} else {
 					session.write(str2Packet("JOIN FAIL " + printRooms()));
 				}
+				// HJ End
+				// Written By ESP
+				Room currentRoom = getRoomByRoomId(result[1]);
+				String crTitle = currentRoom.getTitle();
+				session.write(str2Packet("SETTITLE OK " + crTitle));
+				// ESP End
 				break;
 			case ChatCommand.CREATE:
 				if (result.length == 2) {
@@ -171,8 +183,10 @@ public class ChatProtocolHandler extends IoHandlerAdapter {
 					setRoomid(session, String.valueOf(roomIdSeq));
 					session.write(str2Packet("JOIN OK "));
 					session.write(str2Packet("CREATE OK "+roomIdSeq));
+					session.write(str2Packet("SETTITLE OK " + roomArg[0]));
 					roomBroadcast("The user " + user + " has joined this Room.", String.valueOf(roomIdSeq));
 					refreshUsers(String.valueOf(roomIdSeq));
+					refreshUsers("0");
 					refreshRoom();
 				}
 				break;
@@ -181,7 +195,9 @@ public class ChatProtocolHandler extends IoHandlerAdapter {
 				setRoomid(session, "0");
 				roomBroadcast("The user " + user + " has left this Room.", roomId);
 				refreshUsers(roomId);
+				refreshUsers("0");
 				refreshRoom();
+				session.write(str2Packet("SETTITLE OK LOBBY"));
 				break;
 			case ChatCommand.DESTROY: // Written By ESP
 				String id = session.getAttribute("roomId").toString();
@@ -203,6 +219,24 @@ public class ChatProtocolHandler extends IoHandlerAdapter {
 				}
 				rooms.remove(room);
 				refreshRoom();
+				refreshUsers("0");
+				session.write(str2Packet("SETTITLE OK LOBBY"));
+				break;
+			case ChatCommand.USERKICK:
+				String userk = result[1];
+				String roomk= session.getAttribute("roomId").toString();
+				IoSession roomAdminSession = getRoomByRoomId(roomk).getAdminUser();
+				if(session.equals(roomAdminSession) && !session.equals(getSessionByUserName(userk))){
+					IoSession kickUser = getSessionByUserName(userk);
+					setRoomid(kickUser, "0");
+					roomBroadcast("The user " + user + " Kicked.", roomk);
+					refreshUsers(roomk);
+					refreshUsers("0");
+					refreshRoom();
+					session.write(str2Packet("SETTITLE OK LOBBY"));
+				}else{
+					session.write(str2Packet("USERKICK FAIL"));
+				}
 				break;
 			default:
 				LOGGER.info("Unhandled command: " + command);
@@ -249,21 +283,12 @@ public class ChatProtocolHandler extends IoHandlerAdapter {
 		return WebSocketCodecPacket.buildPacket(buf);
 	}
 
-	public String askii2String(String askii) {
-		StringBuilder output = new StringBuilder();
-		for (int i = 0; i < askii.length(); i += 2) {
-			String str = askii.substring(i, i + 2);
-			output.append((char) Integer.parseInt(str, 16));
-		}
-		return output.toString();
-	}
 
 	public void roomBroadcast(String message, String roomId) {
 		synchronized (sessions) {
 			for (IoSession sessionTmp : sessions) {
 				// Session Write to Every Sessions
 				if (sessionTmp.isConnected() && (roomId.equals(sessionTmp.getAttribute("roomId").toString()))) {
-
 					sessionTmp.write(str2Packet("BROADCAST OK " + message));
 				}
 			}
@@ -315,18 +340,28 @@ public class ChatProtocolHandler extends IoHandlerAdapter {
 	}
 	public void refreshUsers(String roomId){
 		String usrTable = "<table id='users'>";
+		String usrTableAdmin = "<table id='users'>";
+		IoSession adminSession = getRoomByRoomId(roomId).getAdminUser();
 		synchronized (sessions) {
 			for (IoSession sessionTmp : sessions) {
 				if (sessionTmp.getAttribute("roomId").equals(roomId)) {
-					usrTable += "<tr class='user'><td>" + sessionTmp.getAttribute("user") + "</td></tr>";
+						usrTableAdmin += "<tr class='user'"
+								+ " onclick=\"userKick(\'" + sessionTmp.getAttribute("user") + "\')\"><td>"
+								+ sessionTmp.getAttribute("user") + "</td></tr>";
+						usrTable += "<tr class='user'><td>"
+								+ sessionTmp.getAttribute("user") + "</td></tr>";
 				}
 			}
 		}
 		usrTable += "</table>";
+		usrTableAdmin += "</table>";
 		synchronized (sessions) {
 			for (IoSession sessionTmp : sessions) {
 				if (sessionTmp.getAttribute("roomId").equals(roomId)) {
-					sessionTmp.write(str2Packet("GETUSER OK " + usrTable));
+					if(sessionTmp.equals(adminSession))
+						sessionTmp.write(str2Packet("GETUSER OK " + usrTableAdmin));
+					else
+						sessionTmp.write(str2Packet("GETUSER OK " + usrTable));
 				}
 			}
 		}
@@ -342,7 +377,18 @@ public class ChatProtocolHandler extends IoHandlerAdapter {
 			}
 		}
 		return room;
-		
+	}
+	public IoSession getSessionByUserName(String userName){
+		IoSession session = null;
+		synchronized (sessions) {
+			for (IoSession sessionTmp : sessions) {
+				if ( sessionTmp.isConnected() &&
+						(userName.equals(sessionTmp.getAttribute("user"))) ){
+					session = sessionTmp;
+				}
+			}
+		}
+		return session;
 	}
 	public boolean isChatUser(String name) {
 		return users.contains(name);
