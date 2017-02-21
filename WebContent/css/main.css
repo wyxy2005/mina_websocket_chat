@@ -46,8 +46,12 @@
 	background:#4da5a3;
 	color:#fff;
 }
-
+#userstr:hover{
+	background:#4da5a3;
+	color:#fff;
+}
 #userList{
+	cursor:default;
 	float:left;
 	width:160px;
 	height:300px;

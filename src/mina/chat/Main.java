@@ -46,31 +46,22 @@ public class Main {
     private static final boolean USE_SSL = false;
 
     public static void main(String[] args) throws Exception {
-    	// Create Non-Sync IO Socket Acceptor.
         NioSocketAcceptor acceptor = new NioSocketAcceptor();
-        // Get Acceptor's Filter Chain
         DefaultIoFilterChainBuilder chain = acceptor.getFilterChain();
 
-        // MDC( Mapped Diagnostic Context ), Injection some key IoSession properties
         MdcInjectionFilter mdcInjectionFilter = new MdcInjectionFilter();
-        // Add to Filter Chain
         chain.addLast("mdc", mdcInjectionFilter);
 
-        // Add SSL filter if USE_SSL is enabled.
         if (USE_SSL) {
             addSSLSupport(chain);
         }
 
-        // Add Codec to Filter
         chain.addLast("codec", new ProtocolCodecFilter(
                 new WebSocketCodecFactory()));
 
-        // Add Logger to Filter
         addLogger(chain);
 
-        // set Handler -> ChatProtocolHandler.java
         acceptor.setHandler(new ChatProtocolHandler());
-        // Bind
         acceptor.bind(new InetSocketAddress(PORT));
 
         System.out.println("Listening on port " + PORT);
