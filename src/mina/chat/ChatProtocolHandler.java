@@ -249,7 +249,7 @@ public class ChatProtocolHandler extends IoHandlerAdapter {
 		}
 	}
 	/**
-	 * 스트링을 Websocket Packet형태로 바꿔주는 메서드
+	 * 스트링을 Websocket Packet형태로 바꿔주는 메서드.
 	 * @param 	str		Packet형태로 바꿀 문자열
 	 * @return			str의 내용이 포함된 Websocket Packet
 	 */
@@ -266,7 +266,7 @@ public class ChatProtocolHandler extends IoHandlerAdapter {
 	}
 
 	/**
-	 * 특정 채팅방 안에 있는 사람들에게 메시지를 전달하는 메서드
+	 * 특정 채팅방 안에 있는 사람들에게 메시지를 전달하는 메서드.
 	 * @param message	보낼 메시지
 	 * @param roomId	메시지가 뿌려질 방의 id
 	 */
@@ -280,7 +280,7 @@ public class ChatProtocolHandler extends IoHandlerAdapter {
 		}
 	}
 	/**
-	 * 채팅방 안에 있는 사람들의 수를 세어주는 메서드
+	 * 채팅방 안에 있는 사람들의 수를 세어주는 메서드.
 	 * @param room	Target이 되는 채팅방의 인스턴스
 	 * @return		채팅방에 참여하고 있는 session의 수
 	 */
@@ -297,7 +297,7 @@ public class ChatProtocolHandler extends IoHandlerAdapter {
 		return cnt;
 	}
 	/**
-	 * session의 attribute에 roomId를 주입
+	 * session의 attribute에 roomId를 주입해주는 메서드.
 	 * @param session	Target이 되는 세션
 	 * @param roomId	주입하고자 하는 roomId
 	 */
@@ -306,7 +306,7 @@ public class ChatProtocolHandler extends IoHandlerAdapter {
 		MdcInjectionFilter.setProperty(session, "roomId", roomId);
 	}
 	/**
-	 * 현재 채팅이 진행중인 방의 목록을 html table tag형태로 만들어주는 함수
+	 * 현재 채팅이 진행중인 방의 목록을 html table tag형태로 만들어주는 메서드.
 	 * @return	생성된 html tag가 string 평태로 리턴
 	 */
 	public String printRooms() {
@@ -324,7 +324,7 @@ public class ChatProtocolHandler extends IoHandlerAdapter {
 		return roomTable;
 	}
 	/**
-	 * Target이 되는 채팅방에 참여하고 있는 사람들에게 그 방의 참여자 정보를 html tag table형태로 전달한다
+	 * Target이 되는 채팅방에 참여하고 있는 사람들에게 그 방의 참여자 정보를 html tag table형태로 전달하는 메서드.
 	 * @param roomId	Target이 되는 채팅방의 id
 	 */
 	public void refreshUsers(String roomId){
@@ -356,7 +356,7 @@ public class ChatProtocolHandler extends IoHandlerAdapter {
 		}
 	}
 	/**
-	 * roomId로 Room 인스턴스를 찾아 리턴해 준다.
+	 * roomId로 Room 인스턴스를 찾아 리턴해 주는 메서드.
 	 * @param roomId	찾고자하는 방의 id
 	 * @return			Room 인스턴스
 	 */
@@ -371,7 +371,7 @@ public class ChatProtocolHandler extends IoHandlerAdapter {
 		return null;
 	}
 	/**
-	 * username으로 Session을 찾아 리턴해 준다. 
+	 * username으로 Session을 찾아 리턴해 주는 메서드.
 	 * @param userName	찾고자 하는 Session의 username
 	 * @return			session
 	 */
