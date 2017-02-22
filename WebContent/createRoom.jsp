@@ -36,7 +36,7 @@
 		<table>
 			<tr>
 				<th>제한 인원</th>
-				<td><input type="number" id="size" /></td>
+				<td><input type="number" id="size" min="2"/></td>
 			</tr>
 			<tr>
 				<th>채팅방 이름</th>

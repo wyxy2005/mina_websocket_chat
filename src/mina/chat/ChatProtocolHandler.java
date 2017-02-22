@@ -26,21 +26,16 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.servlet.SessionTrackingMode;
 
 import org.apache.mina.core.buffer.IoBuffer;
-import org.apache.mina.core.future.WriteFuture;
 import org.apache.mina.core.service.IoHandler;
 import org.apache.mina.core.service.IoHandlerAdapter;
 import org.apache.mina.core.session.IoSession;
-import org.apache.mina.filter.codec.ProtocolEncoderOutput;
 import org.apache.mina.filter.logging.MdcInjectionFilter;
-import org.apache.mina.proxy.utils.IoBufferDecoder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import mina.chat.filter.WebSocketCodecPacket;
-import mina.chat.filter.WebSocketEncoder;
 
 /**
  * {@link IoHandler} implementation of a simple chat server protocol.
@@ -93,18 +88,18 @@ public class ChatProtocolHandler extends IoHandlerAdapter {
 			case ChatCommand.LOGIN:
 
 				if (user != null) {
-					session.write(str2Packet("LOGIN ERROR user " + user + " already logged in."));
+					session.write(str2Packet("LOGIN FAIL user " + user + " already logged in."));
 					return;
 				}
 
 				if (result.length == 2) {
 					user = result[1];
 				} else {
-					session.write(str2Packet("LOGIN ERROR invalid login command."));
+					session.write(str2Packet("LOGIN FAIL invalid login command."));
 					return;
 				}
 				if (users.contains(user)) {
-					session.write(str2Packet("LOGIN ERROR the name " + user + " is already used."));
+					session.write(str2Packet("LOGIN FAIL the name " + user + " is already used."));
 					return;
 				}
 
@@ -201,7 +196,7 @@ public class ChatProtocolHandler extends IoHandlerAdapter {
 				if(session.equals(roomAdminSession) && !session.equals(getSessionByUserName(userk))){
 					IoSession kickUser = getSessionByUserName(userk);
 					setRoomid(kickUser, "0");
-					roomBroadcast("The user " + user + " Kicked.", roomk);
+					roomBroadcast("The user " + userk + " Kicked.", roomk);
 					refreshUsers(roomk);
 					refreshUsers("0");
 					refreshRoom();

@@ -9,6 +9,8 @@
 %>
 <script type="text/javascript"
 	src="http://code.jquery.com/jquery-2.1.3.js"></script>
+	<script type="text/javascript"
+	src="js/chat.js"></script>
 <link rel="stylesheet" type="text/css" href="css/main.css">
 <link rel="shortcut icon" href="css/pi.ico"/>
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
@@ -27,109 +29,7 @@ ws.onmessage = function(event) {
 	if (event.data instanceof Blob) {
 		reader = new FileReader();
 		reader.onload = function() {
-			var message = reader.result;
-			var result = message.split(" ");
-			var status = result[1];
-			var theCommand = result[0];
-			if (status == "OK") {
-				switch (theCommand) {
-				case "BROADCAST":
-					var i, len, message;
-					len = result.length;
-					message = "";
-					for (i = 2; i < len; i++) {
-						message += result[i] + " ";
-					}
-					$("#chatArea").append(message + "<br>");
-					break;
-				case "LOGIN":
-					var i, len, message;
-					len = result.length;
-					message = "";
-					for (i = 2; i < len; i++) {
-						message += result[i] + " ";
-					}
-					$("#chatArea").append(message + "<br>");
-					break;
-				case "JOIN":
-					$("#chatArea").empty();
-					$("#chatInputBox").attr("disabled", false);
-					$("#leaveBtn").show();
-					$("#createBtn").hide();
-					var i, len, message;
-					len = result.length;
-					message = "";
-					for (i = 2; i < len; i++) {
-						message += result[i] + " ";
-					}
-					$("#chatArea").append(message);
-					break;
-				case "LEAVE":
-					$("#chatArea").empty();
-					$("#chatInputBox").attr("disabled", true);
-					$("#destroyBtn").hide();
-					$("#leaveBtn").hide();
-					$("#createBtn").show();
-					var i, len, message;
-					len = result.length;
-					message = "";
-					for (i = 2; i < len; i++) {
-						message += result[i] + " ";
-					}
-					$("#chatArea").append(message + "<br>");
-					break;
-				case "CREATE":
-					$("#destroyBtn").show();
-					$("#destroyBtn").onclick = function(){ roomDestroy(result[2]); };
-					break;
-				case "GETUSER":
-					$("#userList2").empty();
-					var i, len, message;
-					len = result.length;
-					message = "";
-					for(i=2; i<len; i++){
-						message += result[i]+" ";
-					}
-					$('#userList2').append(message);
-					break;
-				case "SETTITLE": // Written By ESP
-					var i, len, message;
-					len = result.length;
-					message = "";
-					for(i=2; i<len; i++){
-						message += result[i]+" ";
-					}
-					$("#currentRoom").empty();
-					$("#currentRoom").append(message);
-					$("#currentRoom").show();
-					// End ESP
-					break;
-				case "DESTROY":
-					alert("This room is desroyed.");
-					break;
-				}
-			} else if (status == "FAIL") {
-				switch (theCommand) {
-				case "JOIN":
-					alert("Room Join Failed, Room does not exist or full.");
-					$("#chatArea").empty();
-					$("#chatInputBox").attr("disabled", true);
-					$("#leaveBtn").hide();
-					$("#createBtn").show();
-					var i, len, message;
-					len = result.length;
-					message = "";
-					for (i = 2; i < len; i++) {
-						message += result[i] + " ";
-					}
-					$("#chatArea").append(message + "<br>");
-					break;
-				case "USERKICK":
-					alert("User kick failed.");
-					break;
-				}
-			}
-			return console.log(reader.result);
+			readerHandler(reader);
 		};
 		reader.readAsText(event.data);
 	}
@@ -139,40 +39,6 @@ ws.onclose = function() {
 	window.location.replace('login.html');
 };
 
-function roomJoin(no) {
-	ws.send("JOIN " + no);
-}
-function roomLeave() {
-	ws.send("LEAVE");
-}
-function chatEvent(e) {
-	if (e.keyCode == 13) {
-		var chatVal = $("#chatInputBox").val();
-		ws.send("BROADCAST " + chatVal);
-		$("#chatInputBox").val("");
-		return false;
-	} else {
-		return true;
-	}
-}
-function createRoom(size, title) {
-	ws.send("CREATE " + title + " " + size);
-}
-
-function createPop() {/* Written By Ten */
-	window.open('createRoom.jsp',
-				'',
-				'left=200, top=200, width=500, height=320, scrollbars=n0, status=no, resizeable=no, fullscreen=no, channelmode=no');
-}
-function roomDestroy(no){
-	ws.send("DESTROY "+no);
-}
-
-function userKick(user){
-	var r = confirm("Do you want kick user [ "+user+" ]?");
-	if(r == true)
-		ws.send("USERKICK " + user);
-}
 </script>
 </head>
 <body>
